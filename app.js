@@ -28,8 +28,16 @@ const io = socketIO(server, {
 });
 
 // Middleware
-app.use(cors()); // CORS first
 app.use(helmet());
+
+const corsOptions = {
+    origin: ['https://luxchat-n1ejld078-deepshekhardas1234-9292s-projects.vercel.app', 'http://localhost:5173'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
