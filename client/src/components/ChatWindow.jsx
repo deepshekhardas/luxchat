@@ -196,7 +196,7 @@ const ChatWindow = ({ activeChat }) => {
                                 {msg.attachments?.map((att, i) => (
                                     <div key={i} className="mb-2 rounded-lg overflow-hidden border border-white/10">
                                         <img
-                                            src={`http://localhost:5001${att.url}`}
+                                            src={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}${att.url}`}
                                             alt="attachment"
                                             className="max-w-full max-h-60 object-cover"
                                         />
@@ -230,7 +230,7 @@ const ChatWindow = ({ activeChat }) => {
                         {attachments.map((att, i) => (
                             <div key={i} className="relative group">
                                 <img
-                                    src={`http://localhost:5001${att.url}`}
+                                    src={`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}${att.url}`}
                                     alt="preview"
                                     className="w-20 h-20 object-cover rounded-lg border border-white/20 shadow-lg"
                                 />
