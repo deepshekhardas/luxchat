@@ -77,6 +77,19 @@ const socketHandler = (io) => {
                 // Acknowledge receipt to sender (if needed for UI update)
                 socket.emit('message.sent', { tempId: data.tempId, message });
 
+                // --- LUXBOT INTEGRATION ---
+                // Check if target is LuxBot
+                // We need to fetch the target user to see if it's the bot, OR check against a known Bot ID/Email
+                // For efficiency, we can check if the target User has a specific flag or email "luxbot@luxchat.com"
+                if (!isGroup) {
+                    const targetUser = await User.findById(targetId);
+                    if (targetUser && targetUser.email === 'luxbot@luxchat.com') {
+                        const botController = require('../controllers/botController');
+                        botController.handleBotMessage(io, socket.user.id, text, targetUser);
+                    }
+                }
+                // --------------------------
+
             } catch (error) {
                 console.error('Message Send Error:', error);
                 socket.emit('error', { message: error.message });
