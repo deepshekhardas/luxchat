@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -10,11 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        checkUserLoggedIn();
-    }, []);
-
-    const checkUserLoggedIn = async () => {
+    const checkUserLoggedIn = useCallback(async () => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
@@ -28,7 +24,11 @@ export const AuthProvider = ({ children }) => {
             }
         }
         setLoading(false);
-    };
+    }, []);
+
+    useEffect(() => {
+        checkUserLoggedIn();
+    }, [checkUserLoggedIn]);
 
     const login = async (email, password) => {
         try {
@@ -81,8 +81,39 @@ export const AuthProvider = ({ children }) => {
         toast.success('Logged out');
     };
 
+    const guestLogin = async () => {
+        const guestEmail = "guest@example.com";
+        const guestPass = "guest123";
+        try {
+            // Try login first
+            const { data } = await api.post('/auth/login', { email: guestEmail, password: guestPass });
+            if (data.success) {
+                localStorage.setItem('token', data.data.token);
+                setUser(data.data);
+                toast.success(`Welcome back, Guest!`);
+                return true;
+            }
+        } catch {
+            // If login fails (likely user doesn't exist), try to register
+            try {
+                const { data } = await api.post('/auth/register', { name: "Guest User", email: guestEmail, password: guestPass });
+                if (data.success) {
+                    localStorage.setItem('token', data.data.token);
+                    setUser(data.data);
+                    toast.success(`Welcome, Guest!`);
+                    return true;
+                }
+            } catch {
+                console.error("Guest login registration failed");
+                toast.error("Guest login failed");
+                return false;
+            }
+        }
+        return false;
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, googleLogin, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, googleLogin, guestLogin, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );

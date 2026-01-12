@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
     useEffect(() => {
         if (user) {
             // Connect to Socket server
-            const newSocket = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001', {
+            const newSocket = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000', {
                 auth: {
                     token: localStorage.getItem('token'),
                 },
@@ -38,7 +38,7 @@ export const SocketProvider = ({ children }) => {
                 setSocket(null);
             }
         }
-    }, [user]);
+    }, [user, socket]);
 
     return (
         <SocketContext.Provider value={{ socket, onlineUsers }}>

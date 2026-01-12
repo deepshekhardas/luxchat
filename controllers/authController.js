@@ -53,20 +53,34 @@ const googleLogin = asyncHandler(async (req, res) => {
 
 
 const register = asyncHandler(async (req, res) => {
-    const user = await authService.register(req.body);
-    res.status(201).json({
-        success: true,
-        data: user
-    });
+    try {
+        const user = await authService.register(req.body);
+        res.status(201).json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
 });
 
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const user = await authService.login(email, password);
-    res.json({
-        success: true,
-        data: user
-    });
+    try {
+        const user = await authService.login(email, password);
+        res.json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message // Service throws "Invalid credentials" or "User not found"
+        });
+    }
 });
 
 const logout = asyncHandler(async (req, res) => {

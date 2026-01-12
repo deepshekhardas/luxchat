@@ -46,7 +46,7 @@ const CreateGroupModal = ({ onClose, onGroupCreated }) => {
             onGroupCreated(data.data);
             toast.success('Group Created!');
             onClose();
-        } catch (error) {
+        } catch {
             toast.error('Failed to create group');
         }
     };

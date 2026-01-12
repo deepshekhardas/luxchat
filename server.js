@@ -34,7 +34,7 @@ connectDB().then(async () => {
 });
 
 // Start Server
-const PORT = port || 5000;
+const PORT = port || 5001;
 
 server.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

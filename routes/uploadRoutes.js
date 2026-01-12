@@ -8,9 +8,8 @@ router.post('/', protect, upload.single('file'), (req, res) => {
         return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
-    // Return the file path (relative to server root)
-    // Client invokes static file serving: http://localhost:5001/uploads/filename.jpg
-    const filePath = `/uploads/${req.file.filename}`;
+    // Cloudinary returns the URL in 'path' or 'secure_url'
+    const filePath = req.file.path || req.file.secure_url;
 
     res.json({
         success: true,

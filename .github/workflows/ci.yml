@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # Backend Setup & Test
+    - name: Use Node.js ${{ matrix.node-version }} (Backend)
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install Backend Dependencies
+      run: npm ci
+
+    - name: Lint Backend
+      run: npm run lint
+
+    - name: Test Backend
+      run: npm test
+
+    # Frontend Setup & Test
+    - name: Use Node.js ${{ matrix.node-version }} (Frontend)
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+
+    - name: Install Frontend Dependencies
+      run: |
+        cd client
+        npm ci
+
+    - name: Test Frontend
+      run: |
+        cd client
+        npm test -- --run

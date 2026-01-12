@@ -137,8 +137,106 @@ const socketHandler = (io) => {
             }
         });
 
+        // 6. WebRTC Video Calling Signaling
+        // Track users currently in a call
+        if (!socket.inCall) socket.inCall = false;
 
-        // 5. Disconnection
+        socket.on('calluser', ({ userToCall, signalData, from, name }) => {
+            // from is the socket ID or user ID
+            // userToCall is the User ID we want to call
+            // We need to find the socket ID for userToCall
+            const socketIdToCall = activeUsers.get(userToCall);
+
+            if (!socketIdToCall) {
+                // User is offline or not found
+                socket.emit('call_declined', { message: 'User is offline', reason: 'offline' });
+                return;
+            }
+
+            // Check if the target user is already in a call
+            const targetSocket = io.sockets.sockets.get(socketIdToCall);
+            if (targetSocket && targetSocket.inCall) {
+                socket.emit('call_declined', { message: 'User is busy on another call', reason: 'busy' });
+                return;
+            }
+
+            // Mark caller as in call
+            socket.inCall = true;
+
+            // Set call timeout (30 seconds)
+            const callTimeout = setTimeout(() => {
+                if (socket.inCall && !socket.callAccepted) {
+                    socket.emit('call_timeout', { message: 'Call was not answered' });
+                    socket.inCall = false;
+                    io.to(socketIdToCall).emit('call_missed', { from, name });
+                }
+            }, 30000);
+
+            socket.callTimeout = callTimeout;
+            socket.callAccepted = false;
+
+            io.to(socketIdToCall).emit('calluser', {
+                signal: signalData,
+                from: from, // User ID of caller
+                name: name
+            });
+        });
+
+        socket.on('answercall', (data) => {
+            const callerSocketId = activeUsers.get(data.to); // data.to is caller's User ID
+            if (callerSocketId) {
+                const callerSocket = io.sockets.sockets.get(callerSocketId);
+                if (callerSocket) {
+                    callerSocket.callAccepted = true;
+                    if (callerSocket.callTimeout) {
+                        clearTimeout(callerSocket.callTimeout);
+                    }
+                }
+                socket.inCall = true; // Mark receiver as in call
+                io.to(callerSocketId).emit('callaccepted', data.signal);
+            }
+        });
+
+        // Reject incoming call
+        socket.on('rejectcall', ({ to, reason }) => {
+            const callerSocketId = activeUsers.get(to);
+            if (callerSocketId) {
+                const callerSocket = io.sockets.sockets.get(callerSocketId);
+                if (callerSocket && callerSocket.callTimeout) {
+                    clearTimeout(callerSocket.callTimeout);
+                    callerSocket.inCall = false;
+                }
+                io.to(callerSocketId).emit('call_declined', {
+                    message: reason || 'Call was declined',
+                    reason: 'rejected'
+                });
+            }
+        });
+
+        // Handle ICE candidates if strictly needed (simple-peer handles this in signal usually, but for better stability:)
+        // Simple-peer encapsulates everything in 'signal', so the above two are often enough.
+
+        // End Call
+        socket.on('callended', ({ to }) => {
+            const socketIdToCall = activeUsers.get(to);
+
+            // Clear caller's call state
+            socket.inCall = false;
+            if (socket.callTimeout) {
+                clearTimeout(socket.callTimeout);
+            }
+
+            if (socketIdToCall) {
+                const targetSocket = io.sockets.sockets.get(socketIdToCall);
+                if (targetSocket) {
+                    targetSocket.inCall = false;
+                }
+                io.to(socketIdToCall).emit('callended');
+            }
+        });
+
+
+        // 7. Disconnection
         socket.on('disconnect', async () => {
             console.log(`User disconnected: ${socket.user.name}`);
             activeUsers.delete(socket.user.id);
@@ -153,6 +251,8 @@ const socketHandler = (io) => {
             }
 
             io.emit('user.offline', { userId: socket.user.id, last_seen: new Date() });
+
+            // Also emit call ended if in a call? (Client handles this usually via peer close)
         });
     });
 };

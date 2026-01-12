@@ -21,7 +21,7 @@ const Sidebar = ({ activeChat, setActiveChat }) => {
 
     useEffect(() => {
         if (socket) {
-            socket.on('message.receive', (newMsg) => {
+            socket.on('message.receive', () => {
                 // Simple strategy: reload conversations to update last message/unread
                 fetchConversations();
             });
@@ -59,8 +59,8 @@ const Sidebar = ({ activeChat, setActiveChat }) => {
             try {
                 const { data } = await api.get(`/users?search=${query}`);
                 setSearchResults(data.data);
-            } catch (error) {
-                console.error(error);
+            } catch {
+                console.error('User search failed');
             }
         } else {
             setSearchResults([]);
@@ -80,7 +80,7 @@ const Sidebar = ({ activeChat, setActiveChat }) => {
             setActiveChat(newConv);
             setShowSearch(false);
             setSearchQuery('');
-        } catch (error) {
+        } catch {
             toast.error('Failed to start chat');
         }
     };

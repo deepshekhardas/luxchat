@@ -13,10 +13,12 @@
 - **⚡ Real-Time Messaging**: Powered by Socket.IO for instant delivery.
 - **🔐 Secure Authentication**: JWT-based auth + Google OAuth integration.
 - **👥 Group Chats**: Create, manage, and chat in dynamic groups.
+- **📹 Video Calling**: 1-to-1 video calls with WebRTC.
 - **📁 File Sharing**: Drag-and-drop image uploads with instant preview.
 - **🔔 Smart Notifications**: Real-time alerts and unread message counters.
 - **🔎 User Search**: Instant user discovery and connection.
 - **😀 Emoji Support**: Full rich-text experience with emoji integration.
+- **🤖 AI Chatbot**: LuxBot powered by OpenAI for intelligent conversations.
 
 ## 🛠️ Tech Stack
 
@@ -31,8 +33,40 @@
 - **Node.js & Express**
 - **MongoDB** (Persistence)
 - **Socket.IO** (WebSockets)
-- **Multer** (File Handling)
+- **Multer + Cloudinary** (File Handling)
 - **JWT** (Stateless Authentication)
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login with email/password |
+| POST | `/api/auth/google` | Login with Google OAuth |
+| GET | `/api/auth/me` | Get current user profile |
+| GET | `/api/users/search` | Search users |
+| GET | `/api/conversations` | Get all conversations |
+| POST | `/api/conversations` | Create/get conversation |
+| GET | `/api/groups` | Get user's groups |
+| POST | `/api/groups` | Create a group |
+| GET | `/api/messages/:id` | Get messages |
+| POST | `/api/upload/image` | Upload image |
+
+📚 Full API documentation: [API_DOCS.md](./API_DOCS.md)
+
+## ⚙️ Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `PORT` | Server port (default: 5001) | No |
+| `MONGO_URI` | MongoDB connection string | ✅ |
+| `JWT_SECRET` | Secret for JWT tokens | ✅ |
+| `JWT_EXPIRE` | Token expiration (e.g., "30d") | ✅ |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | For OAuth |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | For uploads |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | For uploads |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | For uploads |
+| `OPENAI_API_KEY` | OpenAI API key | For LuxBot |
 
 ## 🚀 Getting Started
 
@@ -50,13 +84,9 @@
 
 2.  **Backend Setup**
     ```bash
-    cd backend (or root if combined)
     npm install
-    
-    # Configure .env
-    # Create a .env file based on .env.example
-    # Ensure MONGO_URI and JWT_SECRET are set
-    
+    cp .env.example .env
+    # Edit .env with your configuration
     npm start
     # Server runs on http://localhost:5001
     ```
@@ -69,9 +99,20 @@
     # App runs on http://localhost:5174
     ```
 
-## 📸 Screenshots
+4.  **Run Tests**
+    ```bash
+    npm test
+    ```
 
-*(Add your screenshots here for the Upwork portfolio)*
+## 🧪 Testing
+
+The project includes comprehensive unit tests for:
+- `authService` - Registration, login, logout
+- `messageService` - Sending, fetching, read receipts
+- `conversationService` - Creating and listing conversations
+- `userService` - User search and profiles
+
+Run tests with: `npm test`
 
 ## 🤝 Contribution
 
@@ -90,4 +131,5 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for a step-by-step guide to deploying on Re
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-*Built with ❤️ by [Your Name] - Ready for Production.*
+*Built with ❤️ - Production Ready Real-Time Chat Application*
+
