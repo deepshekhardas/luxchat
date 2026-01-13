@@ -23,6 +23,7 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18** (Vite)
 - **TailwindCSS** (Styling & Animation)
 - **Framer Motion** (Micro-interactions)
@@ -30,6 +31,7 @@
 - **Lucide React** (Modern Iconography)
 
 ### Backend
+
 - **Node.js & Express**
 - **MongoDB** (Persistence)
 - **Socket.IO** (WebSockets)
@@ -38,51 +40,54 @@
 
 ## 📡 API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login with email/password |
-| POST | `/api/auth/google` | Login with Google OAuth |
-| GET | `/api/auth/me` | Get current user profile |
-| GET | `/api/users/search` | Search users |
-| GET | `/api/conversations` | Get all conversations |
-| POST | `/api/conversations` | Create/get conversation |
-| GET | `/api/groups` | Get user's groups |
-| POST | `/api/groups` | Create a group |
-| GET | `/api/messages/:id` | Get messages |
-| POST | `/api/upload/image` | Upload image |
+| Method | Endpoint             | Description               |
+| ------ | -------------------- | ------------------------- |
+| POST   | `/api/auth/register` | Register new user         |
+| POST   | `/api/auth/login`    | Login with email/password |
+| POST   | `/api/auth/google`   | Login with Google OAuth   |
+| GET    | `/api/auth/me`       | Get current user profile  |
+| GET    | `/api/users/search`  | Search users              |
+| GET    | `/api/conversations` | Get all conversations     |
+| POST   | `/api/conversations` | Create/get conversation   |
+| GET    | `/api/groups`        | Get user's groups         |
+| POST   | `/api/groups`        | Create a group            |
+| GET    | `/api/messages/:id`  | Get messages              |
+| POST   | `/api/upload/image`  | Upload image              |
 
 📚 Full API documentation: [API_DOCS.md](./API_DOCS.md)
 
 ## ⚙️ Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `PORT` | Server port (default: 5001) | No |
-| `MONGO_URI` | MongoDB connection string | ✅ |
-| `JWT_SECRET` | Secret for JWT tokens | ✅ |
-| `JWT_EXPIRE` | Token expiration (e.g., "30d") | ✅ |
-| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | For OAuth |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | For uploads |
-| `CLOUDINARY_API_KEY` | Cloudinary API key | For uploads |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | For uploads |
-| `OPENAI_API_KEY` | OpenAI API key | For LuxBot |
+| Variable                | Description                    | Required    |
+| ----------------------- | ------------------------------ | ----------- |
+| `PORT`                  | Server port (default: 5001)    | No          |
+| `MONGO_URI`             | MongoDB connection string      | ✅          |
+| `JWT_SECRET`            | Secret for JWT tokens          | ✅          |
+| `JWT_EXPIRE`            | Token expiration (e.g., "30d") | ✅          |
+| `GOOGLE_CLIENT_ID`      | Google OAuth Client ID         | For OAuth   |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name          | For uploads |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key             | For uploads |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret          | For uploads |
+| `OPENAI_API_KEY`        | OpenAI API key                 | For LuxBot  |
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v16+)
 - MongoDB (Running locally on port 27017)
 
 ### Installation
 
 1.  **Clone the Repository**
+
     ```bash
     git clone https://github.com/yourusername/luxchat.git
     cd luxchat
     ```
 
 2.  **Backend Setup**
+
     ```bash
     npm install
     cp .env.example .env
@@ -92,11 +97,12 @@
     ```
 
 3.  **Frontend Setup**
+
     ```bash
     cd client
     npm install
     npm run dev
-    # App runs on http://localhost:5174
+    # App runs on http://localhost:5173
     ```
 
 4.  **Run Tests**
@@ -107,6 +113,7 @@
 ## 🧪 Testing
 
 The project includes comprehensive unit tests for:
+
 - `authService` - Registration, login, logout
 - `messageService` - Sending, fetching, read receipts
 - `conversationService` - Creating and listing conversations
@@ -131,5 +138,5 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for a step-by-step guide to deploying on Re
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-*Built with ❤️ - Production Ready Real-Time Chat Application*
 
+_Built with ❤️ - Production Ready Real-Time Chat Application_

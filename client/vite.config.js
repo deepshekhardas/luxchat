@@ -1,23 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    nodePolyfills(),
-  ],
+  plugins: [react(), nodePolyfills()],
   define: {
-    global: 'window',
+    global: 'window'
   },
   server: {
     port: 5173,
-    strictPort: true,
+    strictPort: true
   },
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/setupTests.js',
-  },
-})
+    setupFiles: './src/setupTests.js'
+  }
+});

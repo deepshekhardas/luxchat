@@ -21,26 +21,29 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO
 const io = socketIO(server, {
-    cors: {
-        origin: '*', // Allow all origins for dev; restrict in production
-        methods: ['GET', 'POST']
-    }
+  cors: {
+    origin: '*', // Allow all origins for dev; restrict in production
+    methods: ['GET', 'POST']
+  }
 });
 
 // Middleware
 app.use(helmet());
 
 const corsOptions = {
-    origin: ['https://luxchat-n1ejld078-deepshekhardas1234-9292s-projects.vercel.app', 'http://localhost:5173'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: [
+    'https://luxchat-n1ejld078-deepshekhardas1234-9292s-projects.vercel.app',
+    'http://localhost:5173'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
+  app.use(morgan('dev'));
 }
 
 // Static Folder for Uploads
@@ -56,7 +59,7 @@ app.use('/api/upload', uploadRoutes); // NEW
 
 // Root Endpoint
 app.get('/', (req, res) => {
-    res.send('Real-Time Chat Backend is running...');
+  res.send('Real-Time Chat Backend is running...');
 });
 
 // Error Handler

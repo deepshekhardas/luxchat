@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-test:
@@ -15,38 +15,38 @@ jobs:
         node-version: [18.x]
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    # Backend Setup & Test
-    - name: Use Node.js ${{ matrix.node-version }} (Backend)
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install Backend Dependencies
-      run: npm ci
+      # Backend Setup & Test
+      - name: Use Node.js ${{ matrix.node-version }} (Backend)
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-    - name: Lint Backend
-      run: npm run lint
+      - name: Install Backend Dependencies
+        run: npm ci
 
-    - name: Test Backend
-      run: npm test
+      - name: Lint Backend
+        run: npm run lint
 
-    # Frontend Setup & Test
-    - name: Use Node.js ${{ matrix.node-version }} (Frontend)
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: client/package-lock.json
+      - name: Test Backend
+        run: npm test
 
-    - name: Install Frontend Dependencies
-      run: |
-        cd client
-        npm ci
+      # Frontend Setup & Test
+      - name: Use Node.js ${{ matrix.node-version }} (Frontend)
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
 
-    - name: Test Frontend
-      run: |
-        cd client
-        npm test -- --run
+      - name: Install Frontend Dependencies
+        run: |
+          cd client
+          npm ci
+
+      - name: Test Frontend
+        run: |
+          cd client
+          npm test -- --run
