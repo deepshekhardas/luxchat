@@ -341,7 +341,7 @@ const ChatWindow = ({ activeChat }) => {
                       src={
                         att.url.startsWith('http')
                           ? att.url
-                          : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}${att.url}`
+                          : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${att.url}`
                       }
                       alt="attachment"
                       className="max-w-full max-h-60 object-cover"
@@ -383,7 +383,7 @@ const ChatWindow = ({ activeChat }) => {
                   src={
                     att.url.startsWith('http')
                       ? att.url
-                      : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}${att.url}`
+                      : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}${att.url}`
                   }
                   alt="preview"
                   className="w-20 h-20 object-cover rounded-lg border border-white/20 shadow-lg"

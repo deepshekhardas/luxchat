@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const authService = require('../services/authService');
+const cacheService = require('../services/cacheService');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User'); // Direct access or via service - let's do direct for speed or add to service
 
@@ -89,9 +90,27 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 const getMe = asyncHandler(async (req, res) => {
+  const cacheKey = `user:${req.user.id}`;
+
+  // Try to get from cache
+  const cachedUser = await cacheService.get(cacheKey);
+
+  if (cachedUser) {
+    return res.json({
+      success: true,
+      data: cachedUser,
+      source: 'cache'
+    });
+  }
+
+  // If not in cache, send DB response (req.user is already fetched by ensureAuthenticated middleware)
+  // And set cache for next time
+  await cacheService.set(cacheKey, req.user);
+
   res.json({
     success: true,
-    data: req.user
+    data: req.user,
+    source: 'db'
   });
 });
 
