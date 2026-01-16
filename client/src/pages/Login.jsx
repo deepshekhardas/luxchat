@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { motion } from 'framer-motion';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const hasGoogleAuth = GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID_HERE';
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const { login, googleLogin } = useAuth();
+  const { user, login, googleLogin, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +26,19 @@ const Login = () => {
       navigate('/');
     }
   };
+
+  // Don't render form if loading or already logged in
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -82,18 +105,20 @@ const Login = () => {
             </Link>
           </p>
 
-          <div className="w-full pt-6 border-t border-white/10 flex justify-center">
-            <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                const success = await googleLogin(credentialResponse.credential);
-                if (success) navigate('/');
-              }}
-              onError={() => console.log('Login Failed')}
-              theme="filled_black"
-              shape="pill"
-              width="250"
-            />
-          </div>
+          {hasGoogleAuth && (
+            <div className="w-full pt-6 border-t border-white/10 flex justify-center">
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  const success = await googleLogin(credentialResponse.credential);
+                  if (success) navigate('/');
+                }}
+                onError={() => console.log('Login Failed')}
+                theme="filled_black"
+                shape="pill"
+                width="250"
+              />
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
