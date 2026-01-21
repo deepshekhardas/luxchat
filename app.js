@@ -14,6 +14,7 @@ const conversationRoutes = require('./routes/conversationRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 const path = require('path');
 
 const app = express();
@@ -55,7 +56,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/api/upload', uploadRoutes); // NEW
+app.use('/api/upload', uploadRoutes);
+app.use('/api/ai', aiRoutes); // AI Features
 
 // Root Endpoint
 app.get('/', (req, res) => {

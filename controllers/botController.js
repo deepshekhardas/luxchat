@@ -1,39 +1,64 @@
 const messageService = require('../services/messageService');
+const { getGeminiResponse } = require('../services/geminiService');
+const { analyzeSentiment } = require('../services/sentimentService');
 
-// Simple pattern matching for now
-const getBotResponse = (text) => {
+/**
+ * Get AI response from Gemini (or fallback to pattern matching)
+ */
+const getBotResponse = async (userId, text) => {
+  try {
+    // Try Gemini first
+    if (process.env.GEMINI_API_KEY) {
+      return await getGeminiResponse(userId, text);
+    }
+  } catch (error) {
+    console.error('Gemini fallback to pattern matching:', error.message);
+  }
+
+  // Fallback: Simple pattern matching
   const lowerText = text.toLowerCase();
 
   if (lowerText.includes('hello') || lowerText.includes('hi') || lowerText.includes('hey')) {
-    return "👋 Hello! I'm LuxBot. How can I help you today?";
+    return "👋 Hello! I'm LuxBot powered by AI. How can I help you today?";
   }
   if (lowerText.includes('help')) {
-    return 'I can help you with: \n- General queries \n- Navigation help \n- Just chatting!';
+    return 'I can help you with:\n- 💬 General conversation\n- ❓ Answering questions\n- 🎯 Navigation help\n- 🤖 AI-powered chat!';
   }
   if (lowerText.includes('who are you')) {
-    return 'I am LuxBot, your AI assistant for this chat application.';
+    return "I'm LuxBot, your AI assistant powered by Google Gemini! 🤖";
   }
   if (lowerText.includes('bye')) {
     return 'Goodbye! Have a great day! 👋';
   }
 
-  return "I'm still learning! I didn't quite catch that. Try saying 'Hello' or 'Help'.";
+  return "🤖 I'm here to help! Try asking me anything or say 'Help' for options.";
 };
 
-// Handle incoming message to bot
+/**
+ * Handle incoming message to bot
+ */
 const handleBotMessage = async (io, senderId, text, botUser) => {
   try {
-    // 1. Simulate "Typing" delay
+    // 1. Analyze sentiment of user's message
+    let sentimentEmoji = '';
+    try {
+      const sentiment = await analyzeSentiment(text);
+      sentimentEmoji = sentiment.emoji || '';
+    } catch (e) {
+      console.error('Sentiment analysis skipped:', e.message);
+    }
+
+    // 2. Simulate "Typing" delay
     setTimeout(async () => {
       io.to(senderId).emit('typing.start', {
         userId: botUser._id,
         name: botUser.name,
-        roomId: senderId // DM room
+        roomId: senderId
       });
 
-      // 2. Generate Response after delay
+      // 3. Generate AI Response
       setTimeout(async () => {
-        const responseText = getBotResponse(text);
+        const responseText = await getBotResponse(senderId, text);
 
         // Stop typing
         io.to(senderId).emit('typing.stop', {
@@ -41,13 +66,16 @@ const handleBotMessage = async (io, senderId, text, botUser) => {
           roomId: senderId
         });
 
-        // 3. Send Message
+        // 4. Send Message
         const message = await messageService.sendMessage(
           botUser._id,
           senderId,
           responseText,
           false
         );
+
+        // Add sentiment info to message
+        message.userSentiment = sentimentEmoji;
 
         // Emit to user
         io.to(senderId).emit('message.receive', message);
