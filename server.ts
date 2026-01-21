@@ -1,9 +1,13 @@
 const { server } = require('./app');
 const connectDB = require('./config/db');
+const { connectRedis } = require('./config/redis'); // Added
 const { port } = require('./config/env');
 
-// Connect to Database
-connectDB().then(async () => {
+// Connect to Database & Redis
+const startServices = async () => {
+  await connectDB();
+  await connectRedis(); // Connect Redis
+
   // Seed LuxBot
   try {
     const User = require('./models/User');
@@ -15,14 +19,13 @@ connectDB().then(async () => {
       await User.create({
         name: 'LuxBot',
         email: botEmail,
-        password: 'luxbotpassword123', // secure enough for internal use
-        profile_pic: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png', // Robot Icon
+        password: 'luxbotpassword123',
+        profile_pic: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png',
         status: 'online',
         last_seen: new Date()
       });
       console.log('LuxBot User Created! 🤖');
     } else {
-      // Ensure bot is always online
       if (botExists.status !== 'online') {
         botExists.status = 'online';
         await botExists.save();
@@ -31,7 +34,9 @@ connectDB().then(async () => {
   } catch (err) {
     console.error('Error seeding LuxBot:', err);
   }
-});
+};
+
+startServices();
 
 // Start Server
 const PORT = port || 5001;
@@ -43,6 +48,5 @@ server.listen(PORT, () => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.log(`Error: ${err.message}`);
-  // Close server & exit process
   server.close(() => process.exit(1));
 });

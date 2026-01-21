@@ -1,10 +1,11 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { redisClient } = require('../config/redis');
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Chat history storage (in production, use Redis)
-const chatHistories = new Map();
+// Memory fallback if Redis fails
+const memoryHistory = new Map();
 
 /**
  * Get AI response from Gemini
@@ -20,8 +21,21 @@ const getGeminiResponse = async (userId, message) => {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    // Get or create chat history
-    let history = chatHistories.get(userId) || [];
+    // Retrieve History from Redis
+    let history = [];
+    const historyKey = `chat_history:${userId}`;
+
+    try {
+      if (redisClient.isOpen) {
+        const data = await redisClient.get(historyKey);
+        history = data ? JSON.parse(data) : [];
+      } else {
+        history = memoryHistory.get(userId) || [];
+      }
+    } catch (err) {
+      console.error('Redis Get Error:', err);
+      history = memoryHistory.get(userId) || [];
+    }
 
     // Start chat with history
     const chat = model.startChat({
@@ -36,26 +50,38 @@ const getGeminiResponse = async (userId, message) => {
     const result = await chat.sendMessage(message);
     const response = result.response.text();
 
-    // Update history (keep last 10 exchanges)
+    // Update history
     history.push({ role: 'user', parts: [{ text: message }] });
     history.push({ role: 'model', parts: [{ text: response }] });
+
+    // Keep last 20 messages
     if (history.length > 20) {
       history = history.slice(-20);
     }
-    chatHistories.set(userId, history);
+
+    // Save History to Redis (Expire in 24 hours)
+    try {
+      if (redisClient.isOpen) {
+        await redisClient.setEx(historyKey, 86400, JSON.stringify(history));
+      } else {
+        memoryHistory.set(userId, history);
+      }
+    } catch (err) {
+      console.error('Redis Set Error:', err);
+      memoryHistory.set(userId, history);
+    }
 
     return response;
   } catch (error) {
     console.error('Gemini Error:', error.message);
-    
-    // Fallback responses
+
     if (error.message.includes('API key')) {
       return "⚠️ Invalid Gemini API key. Please check your configuration.";
     }
     if (error.message.includes('quota')) {
       return "⏳ AI quota exceeded. Please try again later.";
     }
-    
+
     return "🤖 I'm having trouble connecting right now. Please try again!";
   }
 };
@@ -63,9 +89,18 @@ const getGeminiResponse = async (userId, message) => {
 /**
  * Clear chat history for a user
  */
-const clearHistory = (userId) => {
-  chatHistories.delete(userId);
-  return true;
+const clearHistory = async (userId) => {
+  try {
+    const historyKey = `chat_history:${userId}`;
+    if (redisClient.isOpen) {
+      await redisClient.del(historyKey);
+    }
+    memoryHistory.delete(userId);
+    return true;
+  } catch (error) {
+    console.error('Clear History Error:', error);
+    return false;
+  }
 };
 
 module.exports = {

@@ -1,9 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const { protect } = require('../middleware/auth');
 const { getGeminiResponse, clearHistory } = require('../services/geminiService');
 const { analyzeSentiment } = require('../services/sentimentService');
 const { getSmartReplies } = require('../services/smartReplyService');
+
+// AI Rate Limiter (50 requests per hour)
+const aiLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 50,
+    message: 'Too many AI requests, please try again later.'
+});
+
+// Apply limiter to all AI routes
+router.use(aiLimiter);
 
 /**
  * @route   POST /api/ai/chat
