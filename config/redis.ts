@@ -1,4 +1,4 @@
-const { createClient } = require('redis');
+import { createClient } from 'redis';
 
 // Redis Client Configuration
 const redisClient = createClient({
@@ -19,4 +19,5 @@ const connectRedis = async () => {
     }
 };
 
-module.exports = { redisClient, connectRedis };
+export { redisClient, connectRedis };
+

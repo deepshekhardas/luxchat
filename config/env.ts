@@ -1,12 +1,11 @@
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 // Load env vars
 dotenv.config();
 
-module.exports = {
-  port: process.env.PORT || 5002,
-  mongoURI: process.env.MONGO_URI,
-  jwtSecret: process.env.JWT_SECRET,
-  jwtExpire: process.env.JWT_EXPIRE,
-  nodeEnv: process.env.NODE_ENV || 'development'
-};
+export const port = process.env.PORT || 5002;
+export const mongoURI = process.env.MONGO_URI;
+export const jwtSecret = process.env.JWT_SECRET;
+export const jwtExpire = process.env.JWT_EXPIRE;
+export const nodeEnv = process.env.NODE_ENV || 'development';
+

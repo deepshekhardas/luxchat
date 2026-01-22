@@ -1,7 +1,7 @@
-const { server } = require('./app');
-const connectDB = require('./config/db');
-const { connectRedis } = require('./config/redis'); // Added
-const { port } = require('./config/env');
+import { server } from './app';
+import connectDB from './config/db';
+import { connectRedis } from './config/redis';
+import { port } from './config/env';
 
 // Connect to Database & Redis
 const startServices = async () => {
@@ -10,7 +10,7 @@ const startServices = async () => {
 
   // Seed LuxBot
   try {
-    const User = require('./models/User');
+    const User = require('./models/User'); // Keep dynamic require for Mongoose model to avoid circular deps if any
     const botEmail = 'luxbot@luxchat.com';
     const botExists = await User.findOne({ email: botEmail });
 
@@ -46,7 +46,8 @@ server.listen(PORT, () => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', (err: Error) => {
   console.log(`Error: ${err.message}`);
   server.close(() => process.exit(1));
 });
+

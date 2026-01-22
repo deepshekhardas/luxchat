@@ -11,13 +11,20 @@
         "forceConsistentCasingInFileNames": true,
         "strict": false,
         "noImplicitAny": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "typeRoots": [
+            "./node_modules/@types",
+            "./types"
+        ]
     },
     "include": [
         "**/*"
     ],
     "exclude": [
         "node_modules",
-        "client"
+        "client",
+        "tests",
+        "verify_features.js",
+        "dist"
     ]
 }

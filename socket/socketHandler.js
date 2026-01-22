@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const messageService = require('../services/messageService');
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
+import messageService from '../services/messageService';
 
 // Map to track active users: userId -> socketId
 const activeUsers = new Map();
@@ -252,4 +252,5 @@ const socketHandler = (io) => {
   });
 };
 
-module.exports = socketHandler;
+export default socketHandler;
+

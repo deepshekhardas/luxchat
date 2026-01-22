@@ -1,28 +1,28 @@
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit'); // Added
-const errorHandler = require('./middleware/errorHandler');
-const socketHandler = require('./socket/socketHandler');
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io'; // Socket.IO Server Type
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import errorHandler from './middleware/errorHandler';
+import socketHandler from './socket/socketHandler';
+import path from 'path';
 
 // Routes
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const conversationRoutes = require('./routes/conversationRoutes');
-const groupRoutes = require('./routes/groupRoutes');
-const messageRoutes = require('./routes/messageRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
-const aiRoutes = require('./routes/aiRoutes');
-const path = require('path');
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import conversationRoutes from './routes/conversationRoutes';
+import groupRoutes from './routes/groupRoutes';
+import messageRoutes from './routes/messageRoutes';
+import uploadRoutes from './routes/uploadRoutes';
+import aiRoutes from './routes/aiRoutes';
 
 const app = express();
 const server = http.createServer(app);
 
 // Initialize Socket.IO
-const io = socketIO(server, {
+const io = new Server(server, {
   cors: {
     origin: '*', // Allow all origins for dev; restrict in production
     methods: ['GET', 'POST']
@@ -48,7 +48,7 @@ app.use(express.json());
 // Global Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  limit: 100, // Limit each IP to 100 requests per windowMs. 'max' is deprecated in newer versions, use 'limit'
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use(limiter);
@@ -80,4 +80,5 @@ app.use(errorHandler);
 // Socket.IO Handler
 socketHandler(io);
 
-module.exports = { app, server };
+export { app, server };
+
