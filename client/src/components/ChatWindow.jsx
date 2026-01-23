@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -47,7 +47,7 @@ const ChatWindow = ({ activeChat }) => {
     setLoading(false);
   };
 
-  const leaveCall = () => {
+  const leaveCall = useCallback(() => {
     setCallAccepted(false);
     setReceivingCall(false);
     setIsCalling(false);
@@ -63,14 +63,18 @@ const ChatWindow = ({ activeChat }) => {
     }
 
     // Notify other user
-    const partner = getPartnerId();
+    const partner = activeChat && !activeChat.isGroup
+      ? activeChat.participants.find((u) => u._id !== user._id)?._id
+      : null;
     if (partner && socket) {
       socket.emit('callended', { to: partner });
     }
 
     // Clean up socket listener for this call
-    socket.off('callaccepted');
-  };
+    if (socket) {
+      socket.off('callaccepted');
+    }
+  }, [stream, socket, activeChat, user._id]);
 
   const getPartnerName = () => {
     if (!activeChat) return '';
@@ -97,6 +101,7 @@ const ChatWindow = ({ activeChat }) => {
         : { conversationId: activeChat._id };
       socket?.emit('message.read', payload);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChat]);
 
   useEffect(() => {
@@ -158,7 +163,7 @@ const ChatWindow = ({ activeChat }) => {
       socket.off('calluser');
       socket.off('callended');
     };
-  }, [socket, activeChat]);
+  }, [socket, activeChat, user._id, leaveCall]);
 
   // --- VIDEO CALL FUNCTIONS ---
   const callUser = (id) => {
@@ -240,17 +245,74 @@ const ChatWindow = ({ activeChat }) => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() && attachments.length === 0) return;
-    try {
-      const encryptedText = encryptMessage(newMessage);
-      const payload = activeChat.isGroup
-        ? { group_id: activeChat._id, text: encryptedText, attachments }
-        : { recipient_id: activeChat._id, text: encryptedText, attachments };
-      await api.post('/messages', payload);
-      setNewMessage('');
-      setAttachments([]);
-      socket?.emit('typing.stop', { roomId: activeChat._id });
-    } catch (error) {
-      console.error('Send failed', error);
+
+    const encryptedText = encryptMessage(newMessage);
+    const tempId = Date.now(); // For optimistic UI tracking
+
+    // Optimistic UI: Show message immediately
+    const optimisticMessage = {
+      _id: tempId,
+      sender: { _id: user._id, name: user.name, profile_pic: user.profile_pic },
+      text: encryptedText,
+      attachments,
+      createdAt: new Date().toISOString(),
+      status: 'sending',
+      conversation_id: activeChat.isGroup ? null : activeChat._id,
+      group_id: activeChat.isGroup ? activeChat._id : null
+    };
+    setMessages((prev) => [...prev, optimisticMessage]);
+    setNewMessage('');
+    setAttachments([]);
+    socket?.emit('typing.stop', { roomId: activeChat._id });
+
+    // Send via Socket.io for real-time
+    if (socket) {
+      socket.emit('message.send', {
+        targetId: activeChat._id,
+        text: encryptedText,
+        isGroup: activeChat.isGroup || false,
+        tempId
+      });
+
+      // Listen for confirmation and update optimistic message
+      socket.once('message.sent', ({ tempId: confirmedTempId, message }) => {
+        if (confirmedTempId === tempId) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === tempId ? { ...message, status: 'sent' } : msg
+            )
+          );
+        }
+      });
+
+      // Handle error
+      socket.once('error', ({ message: errorMsg }) => {
+        console.error('Send failed:', errorMsg);
+        // Mark optimistic message as failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempId ? { ...msg, status: 'failed' } : msg
+          )
+        );
+      });
+    } else {
+      // Fallback to HTTP if socket not connected
+      try {
+        const payload = activeChat.isGroup
+          ? { group_id: activeChat._id, text: encryptedText, attachments }
+          : { recipient_id: activeChat._id, text: encryptedText, attachments };
+        const { data } = await api.post('/messages', payload);
+        setMessages((prev) =>
+          prev.map((msg) => (msg._id === tempId ? data.data : msg))
+        );
+      } catch (error) {
+        console.error('Send failed', error);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempId ? { ...msg, status: 'failed' } : msg
+          )
+        );
+      }
     }
   };
 

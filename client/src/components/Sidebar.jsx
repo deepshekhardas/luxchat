@@ -181,10 +181,11 @@ const Sidebar = ({ activeChat, setActiveChat }) => {
               key={conv._id}
               onClick={() => setActiveChat(conv)}
               className={`p-3 flex items-center space-x-3 cursor-pointer rounded-xl transition-all duration-200 border border-transparent 
-                            ${isActive
-                  ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-white/10 shadow-lg'
-                  : 'hover:bg-white/5 hover:border-white/5'
-                }`}
+                            ${
+                              isActive
+                                ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-white/10 shadow-lg'
+                                : 'hover:bg-white/5 hover:border-white/5'
+                            }`}
             >
               <div className="relative">
                 <div
