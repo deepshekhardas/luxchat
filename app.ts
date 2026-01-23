@@ -35,6 +35,7 @@ app.use(helmet());
 const corsOptions = {
   origin: [
     'https://luxchat-n1ejld078-deepshekhardas1234-9292s-projects.vercel.app',
+        'https://luxchat-kappa.vercel.app',
     'http://localhost:5173'
   ],
   credentials: true,
