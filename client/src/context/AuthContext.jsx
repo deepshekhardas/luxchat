@@ -4,14 +4,22 @@ import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Loading...');
 
   const checkUserLoggedIn = useCallback(async () => {
     const token = localStorage.getItem('token');
+
+    // Set a timeout to change the message if it takes too long (cold start)
+    const timeoutId = setTimeout(() => {
+      setLoadingMessage('Starting server... this may take up to a minute on the free tier.');
+    }, 3000);
+
     if (token) {
       try {
         const { data } = await api.get('/auth/me');
@@ -23,6 +31,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('token');
       }
     }
+    clearTimeout(timeoutId);
     setLoading(false);
   }, []);
 
@@ -118,7 +127,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, register, googleLogin, guestLogin, logout, loading }}
+      value={{ user, login, register, googleLogin, guestLogin, logout, loading, loadingMessage }}
     >
       {children}
     </AuthContext.Provider>

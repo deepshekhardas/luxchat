@@ -10,9 +10,16 @@ import NotFound from './pages/NotFound';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, loadingMessage } = useAuth();
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+        <p className="text-lg animate-pulse">{loadingMessage || 'Loading...'}</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
